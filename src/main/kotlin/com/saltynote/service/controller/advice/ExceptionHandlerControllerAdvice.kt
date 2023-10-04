@@ -5,18 +5,11 @@ import com.saltynote.service.exception.WebAppRuntimeException
 import io.sentry.Sentry
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.AuthenticationException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class ExceptionHandlerControllerAdvice {
-    @ExceptionHandler(AuthenticationException::class)
-    fun handleAuthenticationException(e: AuthenticationException): ResponseEntity<ServiceResponse> {
-        Sentry.captureException(e)
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(ServiceResponse(HttpStatus.UNAUTHORIZED, e.message))
-    }
 
     @ExceptionHandler(WebAppRuntimeException::class)
     fun handleWebClientRuntimeException(e: WebAppRuntimeException): ResponseEntity<ServiceResponse> {

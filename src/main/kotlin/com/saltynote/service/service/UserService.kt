@@ -1,7 +1,7 @@
 package com.saltynote.service.service
 
 import com.saltynote.service.entity.LoginHistory
-import com.saltynote.service.entity.SiteUser
+import com.saltynote.service.entity.User
 import com.saltynote.service.repository.LoginHistoryRepository
 import com.saltynote.service.repository.NoteRepository
 import com.saltynote.service.repository.UserRepository
@@ -21,10 +21,10 @@ class UserService(
     val noteRepository: NoteRepository,
     val vaultRepository: VaultRepository,
     val loginHistoryRepository: LoginHistoryRepository,
-) : RepositoryService<String, SiteUser> {
+) : RepositoryService<Long, User> {
 
     @Caching(put = [CachePut(key = "#entity.id"), CachePut(key = "#entity.username"), CachePut(key = "#entity.email")])
-    override fun create(entity: SiteUser): SiteUser {
+    override fun create(entity: User): User {
         if (hasValidId(entity)) {
             logger.warn { "Note id must be empty: $entity" }
         }
@@ -32,18 +32,18 @@ class UserService(
     }
 
     @Caching(put = [CachePut(key = "#entity.id"), CachePut(key = "#entity.username"), CachePut(key = "#entity.email")])
-    override fun update(entity: SiteUser): SiteUser {
+    override fun update(entity: User): User {
         checkIdExists(entity)
         return repository.save(entity)
     }
 
     @Cacheable(key = "#id")
-    override fun getById(id: String): Optional<SiteUser> {
+    override fun getById(id: Long): Optional<User> {
         return repository.findById(id)
     }
 
     // No need to do cache evict here, since all stale content will be expired soon.
-    override fun delete(entity: SiteUser) {
+    override fun delete(entity: User) {
         repository.deleteById(entity.id!!)
     }
 
@@ -52,7 +52,7 @@ class UserService(
     // No need to do cache evict here, since all stale content will be expired soon.
     @Transactional
     @CacheEvict(key = "#userId")
-    fun cleanupByUserId(userId: String) {
+    fun cleanupByUserId(userId: Long) {
         noteRepository.deleteByUserId(userId)
         vaultRepository.deleteByUserId(userId)
         loginHistoryRepository.deleteByUserId(userId)
@@ -60,16 +60,16 @@ class UserService(
     }
 
     @Cacheable(key = "#email")
-    fun getByEmail(email: String): SiteUser? {
+    fun getByEmail(email: String): User? {
         return repository.findByEmail(email)
     }
 
     @Cacheable(key = "#username")
-    fun getByUsername(username: String?): SiteUser? {
+    fun getByUsername(username: String?): User? {
         return repository.findByUsername(username!!)
     }
 
-    fun saveLoginHistory(userId: String, ip: String?, userAgent: String?) {
+    fun saveLoginHistory(userId: Long, ip: String?, userAgent: String?) {
         val loginHistory = LoginHistory(userId = userId, remoteIp = ip ?: "", userAgent = userAgent ?: "")
         loginHistoryRepository.save(loginHistory)
     }

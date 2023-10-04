@@ -55,7 +55,7 @@ class JwtService(private val objectMapper: ObjectMapper) {
 
     @Throws(JWTCreationException::class)
     private fun createToken(
-        subject: String, userId: String, tokenTTL: Long,
+        subject: String, userId: Long, tokenTTL: Long,
         secret: String?
     ): String {
         return JWT.create()

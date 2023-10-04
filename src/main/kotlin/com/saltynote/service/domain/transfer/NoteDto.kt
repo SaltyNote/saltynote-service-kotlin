@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class NoteDto(
-    var userId: String? = null,
+    var userId: Long,
     val text: String,
     val url: String,
     val note: String = "",

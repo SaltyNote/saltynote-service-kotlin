@@ -2,12 +2,12 @@ package com.saltynote.service.event
 
 import com.saltynote.service.domain.EmailPayload
 import com.saltynote.service.domain.VaultType
-import com.saltynote.service.entity.SiteUser
+import com.saltynote.service.entity.User
 import com.saltynote.service.entity.Vault
 import com.saltynote.service.utils.BaseUtils
 import org.springframework.context.ApplicationEvent
 
-class EmailEvent(source: Any, val user: SiteUser, val type: Type) : ApplicationEvent(source) {
+class EmailEvent(source: Any, val user: User, val type: Type) : ApplicationEvent(source) {
 
     enum class Type(val subject: String, val payload: EmailPayload) {
         NEW_USER(
@@ -37,7 +37,7 @@ class EmailEvent(source: Any, val user: SiteUser, val type: Type) : ApplicationE
             }
         };
 
-        fun loadUser(user: SiteUser): Type {
+        fun loadUser(user: User): Type {
             payload.username = user.username
             return this
         }

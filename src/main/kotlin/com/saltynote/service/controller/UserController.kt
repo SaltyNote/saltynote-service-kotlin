@@ -1,11 +1,12 @@
 package com.saltynote.service.controller
 
+import cn.dev33.satoken.secure.BCrypt
+import cn.dev33.satoken.stp.StpUtil
 import com.saltynote.service.domain.VaultType
 import com.saltynote.service.domain.transfer.*
-import com.saltynote.service.entity.SiteUser
+import com.saltynote.service.entity.User
 import com.saltynote.service.event.EmailEvent
 import com.saltynote.service.exception.WebAppRuntimeException
-import com.saltynote.service.security.JWTAuthenticationService
 import com.saltynote.service.service.JwtService
 import com.saltynote.service.service.UserService
 import com.saltynote.service.service.VaultService
@@ -19,7 +20,6 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -30,11 +30,9 @@ private val logger = KotlinLogging.logger {}
 @RestController
 class UserController(
     val userService: UserService,
-    val bCryptPasswordEncoder: BCryptPasswordEncoder,
     val jwtService: JwtService,
     val eventPublisher: ApplicationEventPublisher,
     val vaultService: VaultService,
-    val authenticationService: JWTAuthenticationService,
 ) {
     @Value("\${password.minimal.length}")
     private val passwordMinimalLength = 0
@@ -46,7 +44,7 @@ class UserController(
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ServiceResponse(HttpStatus.BAD_REQUEST, "Email is already signed up."))
         }
-        val user = SiteUser(email = payload.email, username = "there")
+        val user = User(email = payload.email, username = "there")
         eventPublisher.publishEvent(EmailEvent(this, user, EmailEvent.Type.NEW_USER))
         return ResponseEntity.ok(ServiceResponse.ok("A verification code for signup is sent to you email now"))
     }
@@ -65,7 +63,7 @@ class UserController(
             userNewRequest.email,
             userNewRequest.token, VaultType.NEW_ACCOUNT
         ) ?: throw WebAppRuntimeException(HttpStatus.FORBIDDEN, "A valid verification code is required for signup.")
-        var user: SiteUser = userNewRequest.toSiteUser()
+        var user: User = userNewRequest.toSiteUser()
         user.password = bCryptPasswordEncoder.encode(user.password)
         user = userService.create(user)
         return if (user.id != null && user.id!!.isNotBlank()) {
@@ -150,8 +148,7 @@ class UserController(
 
     @RequestMapping(value = ["/password"], method = [RequestMethod.POST, RequestMethod.PUT])
     fun updatePassword(
-        @RequestBody passwordUpdate: @Valid PasswordUpdate,
-        auth: Authentication
+        @RequestBody passwordUpdate: @Valid PasswordUpdate
     ): ResponseEntity<ServiceResponse> {
         val jwtUser = auth.principal as JwtUser
         // Validate new password
@@ -163,29 +160,29 @@ class UserController(
         }
 
         // Validate old password
-        val usero: Optional<SiteUser> = userService.getById(jwtUser.getId())
+        val usero: Optional<User> = userService.getById(jwtUser.getId())
         if (usero.isEmpty) {
             throw WebAppRuntimeException(
                 HttpStatus.BAD_REQUEST,
                 "Something goes wrong when fetching your info, please try later again."
             )
         }
-        val user: SiteUser = usero.get()
-        if (!bCryptPasswordEncoder.matches(passwordUpdate.oldPassword, user.password)) {
+        val user: User = usero.get()
+        if (!BCrypt.checkpw(passwordUpdate.oldPassword, user.password)) {
             throw WebAppRuntimeException(HttpStatus.BAD_REQUEST, "Wrong current password is provided.")
         }
-        user.password = bCryptPasswordEncoder.encode(passwordUpdate.password)
+        user.password = BCrypt.hashpw(passwordUpdate.password)
         userService.update(user)
         return ResponseEntity.ok(ServiceResponse.ok("Password is updated now."))
     }
 
     @DeleteMapping("/account/{id}")
-    fun accountDeletion(@PathVariable("id") userId: String, auth: Authentication): ResponseEntity<ServiceResponse> {
-        val jwtUser = auth.principal as JwtUser
-        if (userId != jwtUser.getId()) {
+    fun accountDeletion(@PathVariable("id") userId: Long): ResponseEntity<ServiceResponse> {
+        val loginId = StpUtil.getLoginIdAsLong()
+        if (userId != loginId) {
             throw WebAppRuntimeException(HttpStatus.BAD_REQUEST, "User information is not confirmed")
         }
-        userService.cleanupByUserId(jwtUser.getId())
+        userService.cleanupByUserId(loginId)
         return ResponseEntity.ok(ServiceResponse.ok("Account deletion is successful."))
     }
 }

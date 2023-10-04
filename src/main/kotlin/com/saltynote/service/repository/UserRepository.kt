@@ -1,10 +1,9 @@
 package com.saltynote.service.repository
 
-import com.saltynote.service.entity.SiteUser
+import com.saltynote.service.entity.User
 import org.springframework.data.mongodb.repository.MongoRepository
-import java.util.*
 
-interface UserRepository : MongoRepository<SiteUser, String> {
-    fun findByUsername(username: String): SiteUser?
-    fun findByEmail(email: String): SiteUser?
+interface UserRepository : MongoRepository<User, Long> {
+    fun findByUsername(username: String): User?
+    fun findByEmail(email: String): User?
 }

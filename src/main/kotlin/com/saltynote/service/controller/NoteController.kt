@@ -25,7 +25,7 @@ class NoteController(val noteService: NoteService) {
 
 
     @GetMapping("/note/{id}")
-    fun getNoteById(@PathVariable("id") id: String, auth: Authentication): ResponseEntity<Note> {
+    fun getNoteById(@PathVariable("id") id: String): ResponseEntity<Note> {
         val note = noteService.getById(id)
         checkNoteOwner(note, auth)
         return note.map { ResponseEntity.ok(it) }.orElseGet { ResponseEntity.notFound().build() }
@@ -33,8 +33,7 @@ class NoteController(val noteService: NoteService) {
 
     @RequestMapping(value = ["/note/{id}"], method = [RequestMethod.POST, RequestMethod.PUT])
     fun updateNoteById(
-        @PathVariable("id") id: String, @RequestBody noteDto: NoteDto,
-        auth: Authentication
+        @PathVariable("id") id: String, @RequestBody noteDto: NoteDto
     ): ResponseEntity<Note> {
         val queryNote = noteService.getById(id)
         checkNoteOwner(queryNote, auth)
@@ -47,11 +46,11 @@ class NoteController(val noteService: NoteService) {
             noteTobeUpdate.highlightColor = noteDto.highlightColor
         }
         noteTobeUpdate = noteService.update(noteTobeUpdate)
-        return ResponseEntity.ok<Note>(noteTobeUpdate)
+        return ResponseEntity.ok(noteTobeUpdate)
     }
 
     @DeleteMapping("/note/{id}")
-    fun deleteNoteById(@PathVariable("id") id: String, auth: Authentication): ResponseEntity<ServiceResponse> {
+    fun deleteNoteById(@PathVariable("id") id: String): ResponseEntity<ServiceResponse> {
         val note = noteService.getById(id)
         checkNoteOwner(note, auth)
         noteService.delete(note.get())
@@ -62,7 +61,7 @@ class NoteController(val noteService: NoteService) {
     // requests will be
     // blocked by Chrome. Further investigation is required from me for this issue.
     @PostMapping("/note/{id}/delete")
-    fun postDeleteNoteById(@PathVariable("id") id: String, auth: Authentication): ResponseEntity<ServiceResponse> {
+    fun postDeleteNoteById(@PathVariable("id") id: String): ResponseEntity<ServiceResponse> {
         return deleteNoteById(id, auth)
     }
 
@@ -89,7 +88,7 @@ class NoteController(val noteService: NoteService) {
     }
 
     @PostMapping("/note")
-    fun createNote(@RequestBody noteDto: @Valid NoteDto, auth: Authentication): ResponseEntity<Note> {
+    fun createNote(@RequestBody noteDto: @Valid NoteDto): ResponseEntity<Note> {
         val user = auth.principal as JwtUser
         noteDto.userId = user.getId()
         var note = Note.from(noteDto)
@@ -103,7 +102,7 @@ class NoteController(val noteService: NoteService) {
         )
     }
 
-    private fun checkNoteOwner(note: Optional<Note>, auth: Authentication) {
+    private fun checkNoteOwner(note: Optional<Note>) {
         val user = auth.principal as JwtUser
         if (note.isPresent && user.getId() == note.get().userId) {
             return

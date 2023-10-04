@@ -2,7 +2,7 @@ package com.saltynote.service.domain.transfer
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.saltynote.service.entity.SiteUser
+import com.saltynote.service.entity.User
 import jakarta.validation.constraints.NotBlank
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -13,7 +13,7 @@ open class UserCredential(
 ) {
 
     @JsonIgnore
-    fun toSiteUser(): SiteUser {
-        return SiteUser(email = email, username = username, password = password)
+    fun toSiteUser(): User {
+        return User(email = email, username = username, password = password)
     }
 }

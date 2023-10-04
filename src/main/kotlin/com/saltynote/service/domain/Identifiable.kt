@@ -1,5 +1,5 @@
 package com.saltynote.service.domain
 
-interface Identifiable {
-    fun getId(): String?
+fun interface Identifiable {
+    fun getId(): Long
 }

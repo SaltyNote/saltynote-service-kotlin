@@ -2,9 +2,9 @@ package com.saltynote.service.domain.transfer
 
 import org.springframework.http.HttpStatus
 
-data class ServiceResponse(val status: HttpStatus, val message: String?) {
+data class ServiceResponse(val status: HttpStatus, val message: String = "") {
     companion object {
-        fun ok(welcomeMessage: String?): ServiceResponse {
+        fun ok(welcomeMessage: String): ServiceResponse {
             return ServiceResponse(HttpStatus.OK, welcomeMessage)
         }
     }

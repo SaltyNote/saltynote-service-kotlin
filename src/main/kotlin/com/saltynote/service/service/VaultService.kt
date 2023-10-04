@@ -22,13 +22,13 @@ class VaultService(
     val repository: VaultRepository,
     val objectMapper: ObjectMapper,
     val jwtService: JwtService,
-) : RepositoryService<String, Vault> {
+) : RepositoryService<Long, Vault> {
 
     // TTL in milliseconds
     @Value("\${jwt.refresh_token.ttl}")
     private var refreshTokenTTL: Long = 0
 
-    fun create(userId: String, type: VaultType): Vault {
+    fun create(userId: Long, type: VaultType): Vault {
         return create(userId, type, RandomStringUtils.randomAlphanumeric(8))
     }
 
@@ -38,7 +38,7 @@ class VaultService(
         )
     }
 
-    private fun create(userId: String?, type: VaultType, secret: String): Vault {
+    private fun create(userId: Long?, type: VaultType, secret: String): Vault {
         return repository.save(Vault(userId = userId, type = type.value, secret = secret))
     }
 
@@ -120,7 +120,7 @@ class VaultService(
         return repository.save(entity)
     }
 
-    override fun getById(id: String): Optional<Vault> {
+    override fun getById(id: Long): Optional<Vault> {
         return repository.findById(id)
     }
 
@@ -128,15 +128,15 @@ class VaultService(
         repository.deleteById(entity.id!!)
     }
 
-    fun deleteById(id: String) {
+    fun deleteById(id: Long) {
         repository.deleteById(id)
     }
 
-    fun findByUserIdAndTypeAndValue(userId: String, type: VaultType, secret: String): Vault? {
+    fun findByUserIdAndTypeAndValue(userId: Long, type: VaultType, secret: String): Vault? {
         return repository.findByUserIdAndTypeAndSecret(userId, type.value, secret)
     }
 
-    fun cleanRefreshTokenByUserId(userId: String?) {
+    fun cleanRefreshTokenByUserId(userId: Long?) {
         repository.deleteByUserIdAndType(userId!!, VaultType.REFRESH_TOKEN.value)
     }
 
@@ -157,11 +157,11 @@ class VaultService(
         return repository.findByEmail(email!!)
     }
 
-    fun getByUserIdAndType(userId: String?, vaultType: VaultType): List<Vault> {
+    fun getByUserIdAndType(userId: Long?, vaultType: VaultType): List<Vault> {
         return repository.findByUserIdAndType(userId!!, vaultType.value)
     }
 
-    fun getByUserId(userId: String): List<Vault> {
+    fun getByUserId(userId: Long): List<Vault> {
         return repository.findByUserId(userId)
     }
 }

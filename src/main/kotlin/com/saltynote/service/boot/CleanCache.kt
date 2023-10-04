@@ -13,9 +13,9 @@ private val logger = KotlinLogging.logger {}
 @Profile("dev", "local", "default")
 class CleanCache(val cacheManager: CacheManager) : CommandLineRunner {
     override fun run(vararg args: String) {
-        cacheManager.cacheNames.forEach(Consumer { name: String? ->
+        cacheManager.cacheNames.forEach(Consumer { name: String ->
             logger.info { "Clearing cache: $name" }
-            val cache = cacheManager.getCache(name!!)
+            val cache = cacheManager.getCache(name)
             cache?.clear()
         })
     }

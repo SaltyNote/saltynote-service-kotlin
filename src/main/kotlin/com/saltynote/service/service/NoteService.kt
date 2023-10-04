@@ -41,12 +41,12 @@ class NoteService(val repository: NoteRepository) : RepositoryService<String, No
     }
 
     @Cacheable(key = "#userId")
-    fun getAllByUserId(userId: String): List<Note> {
+    fun getAllByUserId(userId: Long): List<Note> {
         return repository.findAllByUserId(userId)
     }
 
     @Cacheable(key = "#userId + #url")
-    fun getAllByUserIdAndUrl(userId: String, url: String): List<Note> {
+    fun getAllByUserIdAndUrl(userId: Long, url: String): List<Note> {
         return repository.findAllByUserIdAndUrl(userId, url)
     }
 

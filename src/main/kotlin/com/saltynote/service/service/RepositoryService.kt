@@ -13,6 +13,6 @@ interface RepositoryService<K, T : Identifiable> {
     }
 
     fun hasValidId(entity: T): Boolean {
-        return entity.getId() != null && entity.getId()!!.isNotBlank()
+        return entity.getId() != null
     }
 }

@@ -1,7 +1,5 @@
 package com.saltynote.service.service
 
-import com.auth0.jwt.exceptions.JWTVerificationException
-import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.saltynote.service.domain.IdentifiableUser
 import com.saltynote.service.domain.VaultEntity
@@ -38,16 +36,16 @@ class VaultService(
         )
     }
 
-    private fun create(userId: Long?, type: VaultType, secret: String): Vault {
+    private fun create(userId: Long, type: VaultType, secret: String): Vault {
         return repository.save(Vault(userId = userId, type = type.value, secret = secret))
     }
 
-    @Throws(JsonProcessingException::class)
+
     fun encode(entity: VaultEntity?): String {
         return Base64.getEncoder().encodeToString(objectMapper.writeValueAsBytes(entity))
     }
 
-    @Throws(JsonProcessingException::class)
+
     fun encode(vault: Vault): String {
         return encode(VaultEntity.from(vault))
     }
@@ -62,9 +60,9 @@ class VaultService(
     }
 
     fun createRefreshToken(user: IdentifiableUser): String {
-        val refreshToken = jwtService.createRefreshToken(user)
-        val (_, _, secret) = create(user.getId(), VaultType.REFRESH_TOKEN, refreshToken)
-        return secret!!
+        val refreshToken = jwtService.createRefreshToken(user.getId())
+        val vault = create(user.getId(), VaultType.REFRESH_TOKEN, refreshToken)
+        return vault.secret
     }
 
     /**
@@ -76,13 +74,13 @@ class VaultService(
      * @return the refresh token value
      */
     fun fetchOrCreateRefreshToken(user: IdentifiableUser): String {
-        val vault = repository.findFirstByUserIdAndTypeOrderByCreatedTimeDesc(
-            user.getId()!!,
+        val vault = repository.findFirstByUserIdAndTypeOrderByCreatedAtDesc(
+            user.getId(),
             VaultType.REFRESH_TOKEN.value
         )
         // If refresh token is young enough, then just return it.
         return if (vault != null && isRefreshTokenReusable(vault.secret)) {
-            vault.secret!!
+            vault.secret
         } else createRefreshToken(user)
         // Refresh token is not a kid anymore or no existing refresh token found, a new
         // one should be created.
@@ -109,14 +107,10 @@ class VaultService(
     }
 
     override fun create(entity: Vault): Vault {
-        if (hasValidId(entity)) {
-            logger.warn { "Note id must be empty: $entity" }
-        }
         return repository.save(entity)
     }
 
     override fun update(entity: Vault): Vault {
-        checkIdExists(entity)
         return repository.save(entity)
     }
 
@@ -125,7 +119,7 @@ class VaultService(
     }
 
     override fun delete(entity: Vault) {
-        repository.deleteById(entity.id!!)
+        repository.deleteById(entity.getId())
     }
 
     fun deleteById(id: Long) {
@@ -140,11 +134,11 @@ class VaultService(
         repository.deleteByUserIdAndType(userId!!, VaultType.REFRESH_TOKEN.value)
     }
 
-    private fun isRefreshTokenReusable(refreshToken: String?): Boolean {
+    private fun isRefreshTokenReusable(refreshToken: String): Boolean {
         return try {
-            val decodedJWT = jwtService.verifyRefreshToken(refreshToken)
-            decodedJWT.expiresAt.after(Date(System.currentTimeMillis() + refreshTokenTTL * 8 / 10))
-        } catch (e: JWTVerificationException) {
+            val decodedJWT = jwtService.parseToken(refreshToken)
+            decodedJWT?.expireAt?.after(Date(System.currentTimeMillis() + refreshTokenTTL * 8 / 10)) ?: false
+        } catch (e: Exception) {
             false
         }
     }

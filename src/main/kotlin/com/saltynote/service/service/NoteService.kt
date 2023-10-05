@@ -15,29 +15,25 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 @CacheConfig(cacheNames = ["note"])
-class NoteService(val repository: NoteRepository) : RepositoryService<String, Note> {
+class NoteService(val repository: NoteRepository) : RepositoryService<Long, Note> {
     @Caching(evict = [CacheEvict(key = "#entity.userId + #entity.url"), CacheEvict(key = "#entity.userId")])
     override fun create(entity: Note): Note {
-        if (hasValidId(entity)) {
-            logger.warn { "Note id must be empty: $entity" }
-        }
-        return repository.save<Note>(entity)
+        return repository.save(entity)
     }
 
     @Caching(evict = [CacheEvict(key = "#entity.id"), CacheEvict(key = "#entity.userId + #entity.url"), CacheEvict(key = "#entity.userId")])
     override fun update(entity: Note): Note {
-        checkIdExists(entity)
         return repository.save<Note>(entity)
     }
 
     @Cacheable(key = "#id")
-    override fun getById(id: String): Optional<Note> {
+    override fun getById(id: Long): Optional<Note> {
         return repository.findById(id)
     }
 
     @Caching(evict = [CacheEvict(key = "#entity.id"), CacheEvict(key = "#entity.userId + #entity.url"), CacheEvict(key = "#entity.userId")])
     override fun delete(entity: Note) {
-        repository.deleteById(entity.id!!)
+        repository.deleteById(entity.getId())
     }
 
     @Cacheable(key = "#userId")

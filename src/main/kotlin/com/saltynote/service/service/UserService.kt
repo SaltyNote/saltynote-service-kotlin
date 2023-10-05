@@ -25,15 +25,11 @@ class UserService(
 
     @Caching(put = [CachePut(key = "#entity.id"), CachePut(key = "#entity.username"), CachePut(key = "#entity.email")])
     override fun create(entity: User): User {
-        if (hasValidId(entity)) {
-            logger.warn { "Note id must be empty: $entity" }
-        }
         return repository.save(entity)
     }
 
     @Caching(put = [CachePut(key = "#entity.id"), CachePut(key = "#entity.username"), CachePut(key = "#entity.email")])
     override fun update(entity: User): User {
-        checkIdExists(entity)
         return repository.save(entity)
     }
 
@@ -44,7 +40,7 @@ class UserService(
 
     // No need to do cache evict here, since all stale content will be expired soon.
     override fun delete(entity: User) {
-        repository.deleteById(entity.id!!)
+        repository.deleteById(entity.getId())
     }
 
     // This api will delete all database records with given user id, including the user

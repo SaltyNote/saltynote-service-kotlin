@@ -13,6 +13,6 @@ class HomeController {
 
     @GetMapping("/")
     fun home(): ResponseEntity<ServiceResponse> {
-        return ResponseEntity.ok(ServiceResponse.ok(welcomeMessage))
+        return ResponseEntity.ok(ServiceResponse.ok(welcomeMessage!!))
     }
 }

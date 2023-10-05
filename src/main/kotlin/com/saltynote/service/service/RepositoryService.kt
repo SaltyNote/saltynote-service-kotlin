@@ -8,11 +8,4 @@ interface RepositoryService<K, T : Identifiable> {
     fun update(entity: T): T
     fun getById(id: K): Optional<T>
     fun delete(entity: T)
-    fun checkIdExists(entity: T) {
-        require(hasValidId(entity)) { "Id must not be empty: $entity" }
-    }
-
-    fun hasValidId(entity: T): Boolean {
-        return entity.getId() != null
-    }
 }

@@ -5,13 +5,12 @@ import com.saltynote.service.domain.transfer.NoteDto
 import com.saltynote.service.generator.SnowflakeIdGenerator
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
-import java.io.Serial
 import java.io.Serializable
 
 @Document
 data class Note(
     @Id
-    val id: Long = SnowflakeIdGenerator.DEFAULT.nextId(),
+    private  val id: Long = SnowflakeIdGenerator.DEFAULT.nextId(),
     val userId: Long,
     val text: String,
     val url: String,
@@ -25,9 +24,6 @@ data class Note(
 
 
     companion object {
-        @Serial
-        private val serialVersionUID = 1L
-
         fun from(note: NoteDto): Note {
             return Note(
                 userId = note.userId,

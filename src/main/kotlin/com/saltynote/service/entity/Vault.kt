@@ -8,11 +8,11 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document
 data class Vault(
     @Id
-    val id: Long = SnowflakeIdGenerator.DEFAULT.nextId(),
-    val userId: String,
+    private val id: Long = SnowflakeIdGenerator.DEFAULT.nextId(),
+    val userId: Long = 0,
     val secret: String,
     val type: String,
-    val email: String,
+    val email: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 ) : Identifiable {

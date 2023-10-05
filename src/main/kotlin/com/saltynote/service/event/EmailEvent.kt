@@ -38,7 +38,7 @@ class EmailEvent(source: Any, val user: User, val type: Type) : ApplicationEvent
         };
 
         fun loadUser(user: User): Type {
-            payload.username = user.username
+            payload.username = user.getUsername()
             return this
         }
 

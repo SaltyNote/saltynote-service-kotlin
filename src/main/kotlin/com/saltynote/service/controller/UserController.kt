@@ -13,13 +13,11 @@ import com.saltynote.service.service.VaultService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.Authentication
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -51,7 +49,7 @@ class UserController(
 
     @Operation(summary = "User Signup", description = "Verification token is needed for signup.")
     @PostMapping("/signup")
-    fun signup(@RequestBody userNewRequest: @Valid UserNewRequest): ResponseEntity<JwtUser> {
+    fun signup(@RequestBody userNewRequest: @Valid UserNewRequest): ResponseEntity<UserDto> {
         if (userNewRequest.password.length < passwordMinimalLength) {
             throw WebAppRuntimeException(
                 HttpStatus.BAD_REQUEST,
@@ -63,37 +61,41 @@ class UserController(
             userNewRequest.email,
             userNewRequest.token, VaultType.NEW_ACCOUNT
         ) ?: throw WebAppRuntimeException(HttpStatus.FORBIDDEN, "A valid verification code is required for signup.")
-        var user: User = userNewRequest.toSiteUser()
-        user.password = bCryptPasswordEncoder.encode(user.password)
+        var user: User = userNewRequest.toUser()
         user = userService.create(user)
-        return if (user.id != null && user.id!!.isNotBlank()) {
-            vaultService.deleteById(vaultOp.id!!)
-            ResponseEntity.ok(user.username?.let { JwtUser(user.id!!, it) })
-        } else {
-            throw WebAppRuntimeException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Failed to signup, please try again later."
-            )
-        }
+
+        vaultService.deleteById(vaultOp.getId())
+        return ResponseEntity.ok(UserDto(user.getId(), user.getUsername()))
     }
 
     @PostMapping("/login")
-    fun authenticate(@RequestBody credential: UserCredential, request: HttpServletRequest): ResponseEntity<TokenPair> {
-        return ResponseEntity.ok(authenticationService.authenticate(credential, request))
+    fun authenticate(@RequestBody request: UserCredential): ResponseEntity<TokenPair> {
+        val user = userService.getByEmail(request.email)
+        user?.let {
+            if (BCrypt.checkpw(request.password, user.password)) {
+                StpUtil.login(user.getId())
+                val refreshToken = jwtService.createRefreshToken(user.getId())
+                return ResponseEntity.ok(TokenPair(accessToken = StpUtil.getTokenValue(), refreshToken = refreshToken))
+            }
+        }
+
+        return ResponseEntity.notFound().build()
     }
 
     @PostMapping("/refresh_token")
     fun refreshToken(@RequestBody tokenPair: @Valid TokenPair): ResponseEntity<TokenPair> {
         // 1. No expiry, and valid.
-        val user = jwtService.parseRefreshToken(tokenPair.refreshToken)
+        val token = jwtService.parseToken(tokenPair.refreshToken)
         // 2. Not deleted from database.
-        val token = vaultService.findByUserIdAndTypeAndValue(
-            user.getId(), VaultType.REFRESH_TOKEN,
-            tokenPair.refreshToken!!
-        )
         token?.let {
-            val newToken = jwtService.createAccessToken(user)
-            return ResponseEntity.ok(TokenPair(newToken, tokenPair.refreshToken))
+            val vault = vaultService.findByUserIdAndTypeAndValue(
+                it.loginId, VaultType.REFRESH_TOKEN,
+                tokenPair.refreshToken
+            )
+            vault?.let { _ ->
+                val newToken = jwtService.createRefreshToken(it.loginId)
+                return ResponseEntity.ok(TokenPair(newToken, tokenPair.refreshToken))
+            }
         }
 
         throw WebAppRuntimeException(HttpStatus.BAD_REQUEST, "Invalid refresh token provided!")
@@ -102,10 +104,10 @@ class UserController(
 
     @Transactional
     @DeleteMapping("/refresh_tokens")
-    fun cleanRefreshTokens(auth: Authentication): ResponseEntity<ServiceResponse> {
-        val user = auth.principal as JwtUser
-        logger.info { "[cleanRefreshTokens] user = $user" }
-        vaultService.cleanRefreshTokenByUserId(user.getId())
+    fun cleanRefreshTokens(): ResponseEntity<ServiceResponse> {
+        val userId = StpUtil.getLoginIdAsLong()
+        logger.info { "[cleanRefreshTokens] user = $userId" }
+        vaultService.cleanRefreshTokenByUserId(userId)
         return ResponseEntity.ok(ServiceResponse.ok("All your refresh tokens are cleaned."))
     }
 
@@ -134,12 +136,12 @@ class UserController(
             )
         }
         val vo = vaultService.findByToken(passwordReset.token) ?: throw wre
-        val usero = userService.getById(vo.userId!!)
+        val usero = userService.getById(vo.userId)
         return if (usero.isPresent) {
             val user = usero.get()
-            user.password = bCryptPasswordEncoder.encode(passwordReset.password)
+            user.password = BCrypt.hashpw(passwordReset.password)
             userService.update(user)
-            vaultService.deleteById(vo.id!!)
+            vaultService.deleteById(vo.getId())
             ResponseEntity.ok(ServiceResponse.ok("Password has been reset!"))
         } else {
             throw wre
@@ -150,7 +152,7 @@ class UserController(
     fun updatePassword(
         @RequestBody passwordUpdate: @Valid PasswordUpdate
     ): ResponseEntity<ServiceResponse> {
-        val jwtUser = auth.principal as JwtUser
+        val userId = StpUtil.getLoginIdAsLong()
         // Validate new password
         if (passwordUpdate.password.length < passwordMinimalLength) {
             throw WebAppRuntimeException(
@@ -160,7 +162,7 @@ class UserController(
         }
 
         // Validate old password
-        val usero: Optional<User> = userService.getById(jwtUser.getId())
+        val usero: Optional<User> = userService.getById(userId)
         if (usero.isEmpty) {
             throw WebAppRuntimeException(
                 HttpStatus.BAD_REQUEST,

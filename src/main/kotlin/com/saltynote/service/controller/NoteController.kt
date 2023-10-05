@@ -1,7 +1,7 @@
 package com.saltynote.service.controller
 
+import cn.dev33.satoken.stp.StpUtil
 import com.google.common.base.Splitter
-import com.saltynote.service.domain.transfer.JwtUser
 import com.saltynote.service.domain.transfer.NoteDto
 import com.saltynote.service.domain.transfer.NoteQuery
 import com.saltynote.service.domain.transfer.ServiceResponse
@@ -14,7 +14,6 @@ import jakarta.validation.Valid
 import org.apache.commons.lang3.StringUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -25,18 +24,18 @@ class NoteController(val noteService: NoteService) {
 
 
     @GetMapping("/note/{id}")
-    fun getNoteById(@PathVariable("id") id: String): ResponseEntity<Note> {
+    fun getNoteById(@PathVariable("id") id: Long): ResponseEntity<Note> {
         val note = noteService.getById(id)
-        checkNoteOwner(note, auth)
+        checkNoteOwner(note)
         return note.map { ResponseEntity.ok(it) }.orElseGet { ResponseEntity.notFound().build() }
     }
 
     @RequestMapping(value = ["/note/{id}"], method = [RequestMethod.POST, RequestMethod.PUT])
     fun updateNoteById(
-        @PathVariable("id") id: String, @RequestBody noteDto: NoteDto
+        @PathVariable("id") id: Long, @RequestBody noteDto: NoteDto
     ): ResponseEntity<Note> {
         val queryNote = noteService.getById(id)
-        checkNoteOwner(queryNote, auth)
+        checkNoteOwner(queryNote)
         var noteTobeUpdate = queryNote.get()
         if (StringUtils.isNotBlank(noteDto.note)) {
             noteTobeUpdate.note = noteDto.note
@@ -50,9 +49,9 @@ class NoteController(val noteService: NoteService) {
     }
 
     @DeleteMapping("/note/{id}")
-    fun deleteNoteById(@PathVariable("id") id: String): ResponseEntity<ServiceResponse> {
+    fun deleteNoteById(@PathVariable("id") id: Long): ResponseEntity<ServiceResponse> {
         val note = noteService.getById(id)
-        checkNoteOwner(note, auth)
+        checkNoteOwner(note)
         noteService.delete(note.get())
         return ResponseEntity.ok(ServiceResponse.ok("Delete Successfully!"))
     }
@@ -61,14 +60,14 @@ class NoteController(val noteService: NoteService) {
     // requests will be
     // blocked by Chrome. Further investigation is required from me for this issue.
     @PostMapping("/note/{id}/delete")
-    fun postDeleteNoteById(@PathVariable("id") id: String): ResponseEntity<ServiceResponse> {
-        return deleteNoteById(id, auth)
+    fun postDeleteNoteById(@PathVariable("id") id: Long): ResponseEntity<ServiceResponse> {
+        return deleteNoteById(id)
     }
 
     @GetMapping("/notes")
-    fun getNotes(auth: Authentication, @RequestParam(required = false) keyword: String?): List<Note>? {
-        val user: JwtUser = auth.principal as JwtUser
-        val allNotes = noteService.getAllByUserId(user.getId())
+    fun getNotes(@RequestParam(required = false) keyword: String?): List<Note>? {
+        val userId = StpUtil.getLoginIdAsLong()
+        val allNotes = noteService.getAllByUserId(userId)
         if (allNotes.isEmpty() || StringUtils.isBlank(keyword)) {
             return allNotes
         }
@@ -82,15 +81,15 @@ class NoteController(val noteService: NoteService) {
     }
 
     @PostMapping("/notes")
-    fun getNotesByUrl(auth: Authentication, @RequestBody noteQuery: @Valid NoteQuery): List<Note> {
-        val user: JwtUser = auth.principal as JwtUser
-        return noteService.getAllByUserIdAndUrl(user.getId(), noteQuery.url)
+    fun getNotesByUrl(@RequestBody noteQuery: @Valid NoteQuery): List<Note> {
+        val userId = StpUtil.getLoginIdAsLong()
+        return noteService.getAllByUserIdAndUrl(userId, noteQuery.url)
     }
 
     @PostMapping("/note")
     fun createNote(@RequestBody noteDto: @Valid NoteDto): ResponseEntity<Note> {
-        val user = auth.principal as JwtUser
-        noteDto.userId = user.getId()
+        val userId = StpUtil.getLoginIdAsLong()
+        noteDto.userId = userId
         var note = Note.from(noteDto)
         note = noteService.create(note)
         if (note.getId() != null) {
@@ -103,8 +102,8 @@ class NoteController(val noteService: NoteService) {
     }
 
     private fun checkNoteOwner(note: Optional<Note>) {
-        val user = auth.principal as JwtUser
-        if (note.isPresent && user.getId() == note.get().userId) {
+        val userId = StpUtil.getLoginIdAsLong()
+        if (note.isPresent && userId == note.get().userId) {
             return
         }
         throw WebAppRuntimeException(HttpStatus.FORBIDDEN, "Permission Error: You are not the owner of the note.")

@@ -1,5 +1,6 @@
 package com.saltynote.service.domain.transfer
 
+import cn.dev33.satoken.secure.BCrypt
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.saltynote.service.entity.User
@@ -13,7 +14,5 @@ open class UserCredential(
 ) {
 
     @JsonIgnore
-    fun toSiteUser(): User {
-        return User(email = email, username = username, password = password)
-    }
+    fun toUser() = User(email = email, username = username, password = BCrypt.hashpw(password))
 }

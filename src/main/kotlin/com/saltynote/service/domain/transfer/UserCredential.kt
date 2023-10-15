@@ -4,13 +4,12 @@ import cn.dev33.satoken.secure.BCrypt
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.saltynote.service.entity.User
-import jakarta.validation.constraints.NotBlank
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 open class UserCredential(
-    @NotBlank open val username: String,
-    @NotBlank open val password: String,
-    @NotBlank open val email: String,
+    open val username: String,
+    open val password: String,
+    open val email: String,
 ) {
 
     @JsonIgnore

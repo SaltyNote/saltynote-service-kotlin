@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class NoteDto(
-    var userId: Long,
+    var userId: Long?,
     val text: String,
     val url: String,
-    val note: String = "",
+    var note: String = "",
 
     @JsonProperty("is_page_only")
     val pageOnly: Boolean = false,

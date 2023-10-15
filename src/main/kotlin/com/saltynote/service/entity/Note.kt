@@ -10,7 +10,7 @@ import java.io.Serializable
 @Document
 data class Note(
     @Id
-    private  val id: Long = SnowflakeIdGenerator.DEFAULT.nextId(),
+    private val id: Long = SnowflakeIdGenerator.DEFAULT.nextId(),
     val userId: Long,
     val text: String,
     val url: String,
@@ -26,7 +26,7 @@ data class Note(
     companion object {
         fun from(note: NoteDto): Note {
             return Note(
-                userId = note.userId,
+                userId = note.userId!!,
                 text = note.text,
                 url = note.url,
                 note = note.note,

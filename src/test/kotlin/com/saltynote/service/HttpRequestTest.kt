@@ -16,10 +16,11 @@ internal class HttpRequestTest {
     private val port = 0
 
     @Autowired
-    private val restTemplate: TestRestTemplate? = null
+    lateinit var restTemplate: TestRestTemplate
 
     @Value("\${app.welcome.message}")
     private val welcomeMessage: String? = null
+
     @Test
     fun welcomePageShouldOK() {
         val (status, message) = restTemplate!!.getForObject("http://localhost:$port/", ServiceResponse::class.java)

@@ -15,6 +15,7 @@ internal class BaseUtilsTest {
             val pcc = BaseUtils::class.java.getDeclaredConstructor()
             pcc.setAccessible(true)
             val baseUtils = pcc.newInstance()
+            println(baseUtils.toString())
         }
         assertTrue(exception.cause is IllegalInitialException)
         assertThat(exception.cause!!.message).isEqualTo("Do not instantiate me.")

@@ -1,7 +1,6 @@
 package com.saltynote.service.utils
 
 import com.saltynote.service.exception.IllegalInitialException
-import jakarta.validation.constraints.NotNull
 import org.apache.commons.lang3.StringUtils
 
 class BaseUtils private constructor() {
@@ -19,11 +18,11 @@ class BaseUtils private constructor() {
             }
         }
 
-        fun getPasswordResetUrl(secret: @NotNull String?): String {
+        fun getPasswordResetUrl(secret: String): String {
             return "$baseUrl/password/reset?token=$secret"
         }
 
-        fun containsAllIgnoreCase(src: String?, queries: Iterable<String>): Boolean {
+        fun containsAllIgnoreCase(src: String, queries: Iterable<String>): Boolean {
             if (StringUtils.isBlank(src)) {
                 return false
             }

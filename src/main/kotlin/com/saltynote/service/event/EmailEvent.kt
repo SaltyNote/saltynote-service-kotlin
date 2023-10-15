@@ -14,7 +14,7 @@ class EmailEvent(source: Any, val user: User, val type: Type) : ApplicationEvent
             "Signup Code to SaltyNote!",
             EmailPayload(message = "Below is the code you will use for signup.")
         ) {
-            override fun loadVault(vault: Vault, encodedVault: String?): Type {
+            override fun loadVault(vault: Vault, encodedVault: String): Type {
                 this.payload.linkText = vault.secret
                 return this
             }
@@ -27,7 +27,7 @@ class EmailEvent(source: Any, val user: User, val type: Type) : ApplicationEvent
             "Password Reset from SaltyNote!",
             EmailPayload(linkText = "Reset Your Password", message = "Below is the link for you to reset your password.")
         ) {
-            override fun loadVault(vault: Vault, encodedVault: String?): Type {
+            override fun loadVault(vault: Vault, encodedVault: String): Type {
                 this.payload.link = BaseUtils.getPasswordResetUrl(encodedVault)
                 return this
             }
@@ -42,7 +42,7 @@ class EmailEvent(source: Any, val user: User, val type: Type) : ApplicationEvent
             return this
         }
 
-        abstract fun loadVault(vault: Vault, encodedVault: String?): Type
+        abstract fun loadVault(vault: Vault, encodedVault: String): Type
         abstract fun getVaultType(): VaultType
     }
 }

@@ -4,7 +4,7 @@ services:
 
   redis:
     image: 'redis:7.0-alpine'
-    command: redis-server --requirepass 88888888
+    command: redis-server --requirepass password
     ports:
       - '6379:6379'
 

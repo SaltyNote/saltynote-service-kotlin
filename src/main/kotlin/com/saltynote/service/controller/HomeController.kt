@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class HomeController {
     @Value("\${app.welcome.message}")
-    private val welcomeMessage: String? = null
+    lateinit var welcomeMessage: String
 
     @GetMapping("/")
     fun home(): ResponseEntity<ServiceResponse> {
-        return ResponseEntity.ok(ServiceResponse.ok(welcomeMessage!!))
+        return ResponseEntity.ok(ServiceResponse.ok(welcomeMessage))
     }
 }

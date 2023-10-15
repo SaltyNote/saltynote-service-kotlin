@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+
+  redis:
+    image: 'redis:7.0-alpine'
+    command: redis-server --requirepass 88888888
+    ports:
+      - '6379:6379'
+
+  mongodb:
+    image: mongo:6-jammy
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: saltynote
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: saltynote
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

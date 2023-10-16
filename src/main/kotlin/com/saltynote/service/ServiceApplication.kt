@@ -2,6 +2,8 @@ package com.saltynote.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.module.kotlin.KotlinFeature
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
@@ -13,7 +15,12 @@ import org.springframework.context.annotation.Bean
 class ServiceApplication {
     @Bean
     fun objectMapper(): ObjectMapper {
-        return ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        return ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE).registerModule(
+            KotlinModule.Builder()
+                .configure(KotlinFeature.NullToEmptyCollection, true)
+                .configure(KotlinFeature.NullToEmptyMap, true)
+                .build()
+        )
     }
 
     companion object {

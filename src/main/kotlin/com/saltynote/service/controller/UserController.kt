@@ -61,7 +61,7 @@ class UserController(
             userNewRequest.email,
             userNewRequest.token, VaultType.NEW_ACCOUNT
         ) ?: throw WebAppRuntimeException(HttpStatus.FORBIDDEN, "A valid verification code is required for signup.")
-        var user: User = userNewRequest.toUser()
+        var user = userNewRequest.toUser()
         user = userService.create(user)
 
         vaultService.deleteById(vaultOp.getId())

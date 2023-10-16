@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document
 data class User(
     @Id
-   private val id: Long = SnowflakeIdGenerator.DEFAULT.nextId(),
+    private val id: Long = SnowflakeIdGenerator.DEFAULT.nextId(),
     private val username: String = "",
     val email: String = "",
     var password: String = "",

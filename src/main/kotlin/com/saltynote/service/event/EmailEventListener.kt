@@ -24,8 +24,8 @@ class EmailEventListener(private val emailService: EmailService, private val vau
     fun handleEvent(event: EmailEvent) {
         logger.info { "Event is received for ${event.type}" }
         val vault = if (event.type === EmailEvent.Type.NEW_USER)
-            vaultService.createVerificationCode(event.user.email!!)
-        else vaultService.create(event.user.getId()!!, event.type.getVaultType())
+            vaultService.createVerificationCode(event.user.email)
+        else vaultService.create(event.user.getId(), event.type.getVaultType())
         val payload: EmailPayload = event.type
             .loadUser(event.user)
             .loadVault(vault, vaultService.encode(vault))

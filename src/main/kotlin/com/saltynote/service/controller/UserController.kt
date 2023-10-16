@@ -36,7 +36,7 @@ class UserController(
     private val passwordMinimalLength = 0
 
     @PostMapping("/email/verification")
-    fun getVerificationToken(@RequestBody payload: @Valid Payload): ResponseEntity<ServiceResponse> {
+    fun getVerificationToken(@RequestBody @Valid payload: Payload): ResponseEntity<ServiceResponse> {
         // check whether this email is already signed up or not.
         if (userService.getByEmail(payload.email) != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

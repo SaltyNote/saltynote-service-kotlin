@@ -1,5 +1,7 @@
 package com.saltynote.service.domain
 
-fun interface Identifiable {
+import java.io.Serializable
+
+fun interface Identifiable : Serializable {
     fun getId(): Long
 }

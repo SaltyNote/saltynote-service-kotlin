@@ -11,7 +11,7 @@ import org.springframework.ui.freemarker.FreeMarkerTemplateUtils
 import java.util.*
 
 @Service
-class EmailService(private val mailSender: JavaMailSender) {
+class EmailService(val mailSender: JavaMailSender) {
     @Value("\${spring.mail.username}")
     private val emailSender: String? = null
     private val freemarkerConfig: Configuration = Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS)

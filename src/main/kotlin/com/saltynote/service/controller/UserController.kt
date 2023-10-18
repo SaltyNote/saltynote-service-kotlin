@@ -71,7 +71,7 @@ class UserController(
     }
 
     @PostMapping("/login")
-    fun authenticate(@RequestBody request: UserCredential, req: HttpServletRequest): ResponseEntity<TokenPair> {
+    fun login(@RequestBody request: UserCredential, req: HttpServletRequest): ResponseEntity<TokenPair> {
         val user = userService.getByEmail(request.email)
         user?.let {
             if (BCrypt.checkpw(request.password, user.password)) {
@@ -169,7 +169,7 @@ class UserController(
         }
 
         // Validate old password
-        val usero: Optional<User> = userService.getById(userId)
+        val usero = userService.getById(userId)
         if (usero.isEmpty) {
             throw WebAppRuntimeException(
                 HttpStatus.BAD_REQUEST,

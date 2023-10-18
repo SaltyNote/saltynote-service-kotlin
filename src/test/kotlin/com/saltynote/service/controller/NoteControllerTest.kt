@@ -24,7 +24,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.any
+import org.mockito.kotlin.any
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -90,7 +90,7 @@ class NoteControllerTest {
             )
             .andExpect(status().isOk())
         val siteUser = userService.getByUsername(userNewRequest.username)
-        assertThat(siteUser).extracting(User::email.toString()).isEqualTo(userNewRequest.email)
+        assertThat(siteUser!!.email).isEqualTo(userNewRequest.email)
         val user = UserCredential(username = userNewRequest.username, email = userNewRequest.email, password = userNewRequest.password)
         val mvcLoginResult = mockMvc
             .perform(

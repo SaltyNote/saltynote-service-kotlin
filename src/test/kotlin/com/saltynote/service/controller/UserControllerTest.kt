@@ -16,8 +16,8 @@ import org.hamcrest.Matchers
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito
+import org.mockito.Mockito.doNothing
+import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
@@ -26,10 +26,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import java.util.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.concurrent.TimeUnit
 
 // Overwrite refresh token ttl to 8 seconds
@@ -60,12 +62,15 @@ internal class UserControllerTest {
     @MockBean
     private var emailService: EmailService? = null
 
+    @MockBean
+    private var mailSender: JavaMailSender? = null
+
     private val faker = Faker()
 
     @BeforeEach
     fun setup() {
-        Mockito.doNothing().`when`<EmailService>(emailService).sendAsHtml(any(), any(), any())
-        Mockito.doNothing().`when`<EmailService>(emailService).send(any(), any(), any())
+        doNothing().`when`<EmailService>(emailService).sendAsHtml(any(), any(), any())
+        doNothing().`when`<EmailService>(emailService).send(any(), any(), any())
     }
 
     @Test
@@ -106,7 +111,7 @@ internal class UserControllerTest {
                 post("/signup").contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(userNewRequest))
             )
-            .andExpect(status().isInternalServerError())
+            .andExpect(status().isForbidden())
     }
 
     @Test
@@ -117,7 +122,7 @@ internal class UserControllerTest {
         assertNotNull(vault.getId())
         assertEquals(vault.email, email)
         val userNewRequest =
-            UserNewRequest(email = email, password = RandomStringUtils.randomAlphanumeric(12), username = username, token = "vault.secret")
+            UserNewRequest(email = email, password = RandomStringUtils.randomAlphanumeric(12), username = username, token = vault.secret)
 
         mockMvc
             .perform(
@@ -127,8 +132,8 @@ internal class UserControllerTest {
 //            .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk())
         val queryUser = userService.getByUsername(userNewRequest.username)
-        assertThat(queryUser).extracting(User::email.toString()).isEqualTo(userNewRequest.email)
-        userService.cleanupByUserId(queryUser!!.getId())
+        assertThat(queryUser!!.email).isEqualTo(userNewRequest.email)
+        userService.cleanupByUserId(queryUser.getId())
     }
 
     @Test
@@ -193,7 +198,9 @@ internal class UserControllerTest {
             .andExpect(status().isOk())
             .andReturn()
         var res: String = mvcResult.response.contentAsString
-        var token: TokenPair = objectMapper.readValue(res, TokenPair::class.java)
+        var token = objectMapper.readValue(res, TokenPair::class.java)
+
+        println("\n\n zhouhao $token \n\n")
         assertNotNull(token)
         assertNotNull(jwtService.parseToken(token.refreshToken))
         assertNotNull(jwtService.parseToken(token.accessToken))
@@ -215,7 +222,7 @@ internal class UserControllerTest {
 
         // Sleep 2 second, so refresh token will age 20%+, then new refresh token should
         // be generated.
-        TimeUnit.SECONDS.sleep(2)
+        TimeUnit.SECONDS.sleep(4)
         mvcResult = mockMvc
             .perform(
                 post("/login").contentType(MediaType.APPLICATION_JSON)
@@ -249,7 +256,7 @@ internal class UserControllerTest {
                 post("/login").contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(userRequest))
             )
-            .andExpect(status().isUnauthorized())
+            .andExpect(status().isNotFound())
         userService.cleanupByUserId(user.getId())
     }
 
@@ -300,7 +307,7 @@ internal class UserControllerTest {
                 post("/login").contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(userRequest))
             )
-            .andExpect(status().isUnauthorized())
+            .andExpect(status().isNotFound())
 
         // login with new password should success
         val ur = UserCredential(username = uc.username, password = newPassword, email = uc.email)

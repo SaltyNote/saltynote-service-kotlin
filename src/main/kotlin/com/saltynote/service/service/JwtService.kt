@@ -25,10 +25,10 @@ class JwtService(val stpLogic: StpLogicJwtForStateless) {
         return try {
             val payloads = SaJwtUtil.parseToken(token, StpUtil.TYPE, stpLogic.jwtSecretKey(), true).payloads
             TokenInfo(
-                loginId = payloads[SaJwtUtil.LOGIN_ID] as Long,
-                loginType = payloads[SaJwtUtil.LOGIN_TYPE].toString(),
-                expireAt = Date(payloads[SaJwtUtil.EFF] as Long),
-                device = payloads[SaJwtUtil.DEVICE].toString(),
+                loginId = payloads.getLong(SaJwtUtil.LOGIN_ID),
+                loginType = payloads.getStr(SaJwtUtil.LOGIN_TYPE),
+                expireAt = Date(payloads.getLong(SaJwtUtil.EFF)),
+                device = payloads.getStr(SaJwtUtil.DEVICE),
             )
         } catch (e: Exception) {
             logger.error(e) { e.message }

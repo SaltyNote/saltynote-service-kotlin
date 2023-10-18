@@ -43,6 +43,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("com.github.javafaker:javafaker:1.0.2")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:2.2.11")
 }
 
 tasks.withType<KotlinCompile> {

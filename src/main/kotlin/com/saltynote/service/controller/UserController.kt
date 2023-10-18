@@ -7,12 +7,14 @@ import com.saltynote.service.domain.transfer.*
 import com.saltynote.service.entity.User
 import com.saltynote.service.event.EmailEvent
 import com.saltynote.service.exception.WebAppRuntimeException
+import com.saltynote.service.security.SecurityConstants
 import com.saltynote.service.service.JwtService
 import com.saltynote.service.service.UserService
 import com.saltynote.service.service.VaultService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
@@ -69,12 +71,17 @@ class UserController(
     }
 
     @PostMapping("/login")
-    fun authenticate(@RequestBody request: UserCredential): ResponseEntity<TokenPair> {
+    fun authenticate(@RequestBody request: UserCredential, req: HttpServletRequest): ResponseEntity<TokenPair> {
         val user = userService.getByEmail(request.email)
         user?.let {
             if (BCrypt.checkpw(request.password, user.password)) {
                 StpUtil.login(user.getId())
-                val refreshToken = jwtService.createRefreshToken(user.getId())
+                val refreshToken = vaultService.fetchOrCreateRefreshToken(user)
+                // update current user's lastLoginTime, after user logged in successfully
+                userService.saveLoginHistory(
+                    user.getId(), req.getHeader(SecurityConstants.REAL_IP_HEADER),
+                    req.getHeader(SecurityConstants.USER_AGENT_HEADER)
+                )
                 return ResponseEntity.ok(TokenPair(accessToken = StpUtil.getTokenValue(), refreshToken = refreshToken))
             }
         }

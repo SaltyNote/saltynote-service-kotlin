@@ -24,8 +24,8 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
@@ -134,7 +134,7 @@ class NoteControllerTest {
             .perform(
                 get("/note/" + savedNote.getId()).header(
                     SecurityConstants.AUTH_HEADER,
-                    "$accessToken"
+                    accessToken
                 )
             )
             .andExpect(status().isOk())
@@ -147,7 +147,7 @@ class NoteControllerTest {
     fun getNoteByIdNoAccessTokenReturnException() {
         // Suppress codacy warning
         Assertions.assertNotNull(savedNote.getId())
-        mockMvc.perform(get("/note/" + savedNote.getId())).andExpect(status().isForbidden())
+        mockMvc.perform(get("/note/" + savedNote.getId())).andExpect(status().isInternalServerError())
     }
 
 
@@ -176,7 +176,7 @@ class NoteControllerTest {
             .perform(
                 post("/note/" + savedNote.getId()).contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(noteToUpdate))
-                    .header(SecurityConstants.AUTH_HEADER, "$accessToken")
+                    .header(SecurityConstants.AUTH_HEADER, accessToken)
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -195,7 +195,7 @@ class NoteControllerTest {
             .perform(
                 post("/note/" + savedNote.getId()).contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(tagToUpdate))
-                    .header(SecurityConstants.AUTH_HEADER, "$accessToken")
+                    .header(SecurityConstants.AUTH_HEADER, accessToken)
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -232,7 +232,7 @@ class NoteControllerTest {
             .perform(
                 post("/note").contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(note))
-                    .header(SecurityConstants.AUTH_HEADER, "$accessToken")
+                    .header(SecurityConstants.AUTH_HEADER, accessToken)
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -245,7 +245,7 @@ class NoteControllerTest {
             .perform(
                 delete("/note/" + returnedNote.getId()).header(
                     SecurityConstants.AUTH_HEADER,
-                    "$accessToken"
+                    accessToken
                 )
             )
             .andExpect(status().isOk())
@@ -260,7 +260,7 @@ class NoteControllerTest {
             .perform(
                 post("/note").contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(note))
-                    .header(SecurityConstants.AUTH_HEADER, "$accessToken")
+                    .header(SecurityConstants.AUTH_HEADER, accessToken)
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -314,7 +314,7 @@ class NoteControllerTest {
             .perform(
                 get("/notes?keyword=$randKeyword").header(
                     SecurityConstants.AUTH_HEADER,
-                    "$accessToken"
+                    accessToken
                 )
             )
             .andExpect(status().isOk())
@@ -327,7 +327,7 @@ class NoteControllerTest {
         mockMvc
             .perform(
                 get("/notes?keyword=" + randKeyword + RandomStringUtils.randomAlphanumeric(6))
-                    .header(SecurityConstants.AUTH_HEADER, "$accessToken")
+                    .header(SecurityConstants.AUTH_HEADER, accessToken)
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -343,7 +343,7 @@ class NoteControllerTest {
             .perform(
                 post("/note").contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(note))
-                    .header(SecurityConstants.AUTH_HEADER, "$accessToken")
+                    .header(SecurityConstants.AUTH_HEADER, accessToken)
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))

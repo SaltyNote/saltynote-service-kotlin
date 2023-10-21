@@ -147,7 +147,7 @@ class NoteControllerTest {
     fun getNoteByIdNoAccessTokenReturnException() {
         // Suppress codacy warning
         Assertions.assertNotNull(savedNote.getId())
-        mockMvc.perform(get("/note/" + savedNote.getId())).andExpect(status().isInternalServerError())
+        mockMvc.perform(get("/note/" + savedNote.getId())).andExpect(status().isForbidden())
     }
 
 

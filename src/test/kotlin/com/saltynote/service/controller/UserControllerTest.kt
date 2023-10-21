@@ -448,7 +448,7 @@ internal class UserControllerTest {
             .andExpect(status().isNotFound())
 
         // deletion should fail due to no access token
-        mockMvc.perform(delete("/account/" + jwtUser.getId())).andExpect(status().isInternalServerError())
+        mockMvc.perform(delete("/account/" + jwtUser.getId())).andExpect(status().isForbidden())
 
         // deletion should succeed
         mockMvc.perform(

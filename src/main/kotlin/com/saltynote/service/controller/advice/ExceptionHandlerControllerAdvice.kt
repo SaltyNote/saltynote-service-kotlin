@@ -1,5 +1,6 @@
 package com.saltynote.service.controller.advice
 
+import cn.dev33.satoken.exception.NotLoginException
 import com.saltynote.service.domain.transfer.ServiceResponse
 import com.saltynote.service.exception.WebAppRuntimeException
 import io.sentry.Sentry
@@ -15,6 +16,12 @@ class ExceptionHandlerControllerAdvice {
     fun handleWebClientRuntimeException(e: WebAppRuntimeException): ResponseEntity<ServiceResponse> {
         Sentry.captureException(e)
         return ResponseEntity.status(e.status).body(ServiceResponse(e.status, e.message))
+    }
+
+    @ExceptionHandler(NotLoginException::class)
+    fun handleWebClientRuntimeException(e: NotLoginException): ResponseEntity<ServiceResponse> {
+        Sentry.captureException(e)
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ServiceResponse(HttpStatus.FORBIDDEN, e.localizedMessage ?: "Not Login"))
     }
 
     @ExceptionHandler(RuntimeException::class)

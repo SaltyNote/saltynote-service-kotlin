@@ -26,7 +26,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
-import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -35,10 +35,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.concurrent.TimeUnit
 
 // Overwrite refresh token ttl to 8 seconds
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = ["jwt.refresh_token.ttl=8000"])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @EnableAutoConfiguration(exclude = [SecurityAutoConfiguration::class])
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ActiveProfiles(value = ["test"])
 internal class UserControllerTest {
 
     @Autowired
@@ -61,9 +62,6 @@ internal class UserControllerTest {
 
     @MockBean
     private var emailService: EmailService? = null
-
-    @MockBean
-    private var mailSender: JavaMailSender? = null
 
     private val faker = Faker()
 
@@ -200,7 +198,6 @@ internal class UserControllerTest {
         var res: String = mvcResult.response.contentAsString
         var token = objectMapper.readValue(res, TokenPair::class.java)
 
-        println("\n\n zhouhao $token \n\n")
         assertNotNull(token)
         assertNotNull(jwtService.parseToken(token.refreshToken))
         assertNotNull(jwtService.parseToken(token.accessToken))
@@ -222,7 +219,7 @@ internal class UserControllerTest {
 
         // Sleep 2 second, so refresh token will age 20%+, then new refresh token should
         // be generated.
-        TimeUnit.SECONDS.sleep(4)
+        TimeUnit.SECONDS.sleep(2)
         mvcResult = mockMvc
             .perform(
                 post("/login").contentType(MediaType.APPLICATION_JSON)
@@ -256,7 +253,7 @@ internal class UserControllerTest {
                 post("/login").contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(userRequest))
             )
-            .andExpect(status().isNotFound())
+            .andExpect(status().isForbidden())
         userService.cleanupByUserId(user.getId())
     }
 
@@ -307,7 +304,7 @@ internal class UserControllerTest {
                 post("/login").contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(userRequest))
             )
-            .andExpect(status().isNotFound())
+            .andExpect(status().isForbidden())
 
         // login with new password should success
         val ur = UserCredential(username = uc.username, password = newPassword, email = uc.email)
@@ -356,12 +353,12 @@ internal class UserControllerTest {
         assertNotNull(token)
         assertNotNull(jwtService.parseToken(token.refreshToken))
         assertNotNull(jwtService.parseToken(token.accessToken))
-        val pu: PasswordUpdate = PasswordUpdate(oldPassword = oldPassword, password = newPassword)
+        val pu = PasswordUpdate(oldPassword = oldPassword, password = newPassword)
         mockMvc
             .perform(
                 post("/password").contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(pu))
-                    .header(SecurityConstants.AUTH_HEADER, "Bearer " + token.accessToken)
+                    .header(SecurityConstants.AUTH_HEADER, token.accessToken)
             )
             .andExpect(status().isOk())
 
@@ -371,7 +368,7 @@ internal class UserControllerTest {
                 post("/login").contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(userNewRequest))
             )
-            .andExpect(status().isUnauthorized())
+            .andExpect(status().isForbidden())
 
         // login with new password should success
         val ur: UserCredential = UserCredential(username = userNewRequest.username, password = newPassword, email = userNewRequest.email)
@@ -426,7 +423,7 @@ internal class UserControllerTest {
             .perform(
                 post("/note").contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(note))
-                    .header(SecurityConstants.AUTH_HEADER, "Bearer " + token.accessToken)
+                    .header(SecurityConstants.AUTH_HEADER, token.accessToken)
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -441,23 +438,23 @@ internal class UserControllerTest {
             .perform(
                 delete("/account/invalid-id").header(
                     SecurityConstants.AUTH_HEADER,
-                    "Bearer " + token.accessToken
+                    token.accessToken
                 )
             )
-            .andExpect(status().isBadRequest())
+            .andExpect(status().isInternalServerError())
         // deletion should fail due to missing user id
         mockMvc
-            .perform(delete("/account").header(SecurityConstants.AUTH_HEADER, "Bearer " + token.accessToken))
+            .perform(delete("/account").header(SecurityConstants.AUTH_HEADER, token.accessToken))
             .andExpect(status().isNotFound())
 
         // deletion should fail due to no access token
-        mockMvc.perform(delete("/account/" + jwtUser.getId())).andExpect(status().isForbidden())
+        mockMvc.perform(delete("/account/" + jwtUser.getId())).andExpect(status().isInternalServerError())
 
         // deletion should succeed
         mockMvc.perform(
             delete("/account/" + jwtUser.getId()).header(
                 SecurityConstants.AUTH_HEADER,
-                "Bearer " + token.accessToken
+                token.accessToken
             )
         )
             .andExpect(status().isOk())

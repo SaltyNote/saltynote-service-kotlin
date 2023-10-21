@@ -7,7 +7,6 @@ import com.saltynote.service.domain.TokenInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import java.util.*
 
 private val logger = KotlinLogging.logger {}
 
@@ -18,7 +17,7 @@ class JwtService(val stpLogic: StpLogicJwtForStateless) {
     private var refreshTokenTtl: Long = 0
 
     fun createRefreshToken(userId: Long): String = StpUtil.getStpLogic()
-        .createTokenValue(userId, StpUtil.getLoginDevice(), System.currentTimeMillis() + refreshTokenTtl, emptyMap())
+        .createTokenValue(userId, StpUtil.getLoginDevice(), refreshTokenTtl, emptyMap())
 
 
     fun parseToken(token: String): TokenInfo? {
@@ -27,8 +26,8 @@ class JwtService(val stpLogic: StpLogicJwtForStateless) {
             TokenInfo(
                 loginId = payloads.getLong(SaJwtUtil.LOGIN_ID),
                 loginType = payloads.getStr(SaJwtUtil.LOGIN_TYPE),
-                expireAt = Date(payloads.getLong(SaJwtUtil.EFF)),
-                device = payloads.getStr(SaJwtUtil.DEVICE),
+                expireAt = payloads.getLong(SaJwtUtil.EFF),
+                device = payloads.getStr(SaJwtUtil.DEVICE) ?: "",
             )
         } catch (e: Exception) {
             logger.error(e) { e.message }

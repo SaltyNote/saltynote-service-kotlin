@@ -84,6 +84,7 @@ class UserController(
                 )
                 return ResponseEntity.ok(TokenPair(accessToken = StpUtil.getTokenValue(), refreshToken = refreshToken))
             }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         }
 
         return ResponseEntity.notFound().build()

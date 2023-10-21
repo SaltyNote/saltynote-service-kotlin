@@ -137,7 +137,7 @@ class VaultService(
     private fun isRefreshTokenReusable(refreshToken: String): Boolean {
         return try {
             val decodedJWT = jwtService.parseToken(refreshToken)
-            decodedJWT?.expireAt?.after(Date(System.currentTimeMillis() + refreshTokenTTL * 8 / 10)) ?: false
+            decodedJWT?.expireAt?.let { Date(it).after(Date(System.currentTimeMillis() + refreshTokenTTL * 8000L / 10)) } ?: false
         } catch (e: Exception) {
             false
         }

@@ -35,7 +35,7 @@ dependencies {
     implementation("com.google.guava:guava:32.1.2-jre")
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
-    implementation("io.sentry:sentry-logback:6.29.0")
+    implementation("io.sentry:sentry-logback:6.33.1")
     implementation("cn.dev33:sa-token-spring-boot3-starter:1.36.0")
     implementation("cn.dev33:sa-token-jwt:1.37.0")
     implementation("io.sentry:sentry-spring-boot-starter-jakarta:6.29.0")

@@ -38,7 +38,7 @@ dependencies {
     implementation("io.sentry:sentry-logback:6.33.1")
     implementation("cn.dev33:sa-token-spring-boot3-starter:1.37.0")
     implementation("cn.dev33:sa-token-jwt:1.37.0")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:6.29.0")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:7.0.0")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")

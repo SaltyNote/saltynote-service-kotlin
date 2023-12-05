@@ -16,28 +16,6 @@ APIs for:
 
 ![overview](https://raw.githubusercontent.com/SaltyNote/saltynote-service/master/docs/images/overview.png)
 
-Unit Test Coverage report: https://saltynote.github.io/saltynote-service/jacoco/
-
-## Try with Docker
-
-Due to different storage engines, there are TWO docker-compose files, one for [mongo](./script/docker-compose-mongo.yml) and the other
-for [mariadb](./script/docker-compose-mariadb.yml).
-```bash
-# For mariadb, please run:
-docker compose -f docker-compose-mariadb.yml -p saltynote-service-mariadb up
-
-# For mongodb, please run:
-docker compose -f docker-compose-mongo.yml -p saltynote-service-mongo up
-```
-
-When it is ready, you can visit http://localhost:8888, it should response with the payload below.
-```json
-{
-   "status": "OK",
-   "message": "Welcome to SaltyNote!"
-}
-```
-
 
 ## Get Started
 

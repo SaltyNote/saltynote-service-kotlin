@@ -73,7 +73,7 @@ class NoteControllerTest {
     private fun signupTestUser(): Pair<User, String> {
         Mockito.doNothing().`when`<EmailService>(emailService).sendAsHtml(any(), any(), any())
         Mockito.doNothing().`when`<EmailService>(emailService).send(any(), any(), any())
-        val username: String = faker.name().username()
+        val username: String = faker.internet().username()
         val email = "$username@saltynote.com"
         val vault: Vault = vaultService.createVerificationCode(email)
         Assertions.assertNotNull(vault.getId())

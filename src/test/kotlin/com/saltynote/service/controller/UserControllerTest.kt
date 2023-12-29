@@ -77,7 +77,7 @@ internal class UserControllerTest {
         val emailStr = getEmail(username)
         val alreadyUsedEmail = "example@exmaple.com"
         var user =
-            User(username = faker.name().username(), email = alreadyUsedEmail, password = BCrypt.hashpw(RandomStringUtils.randomAlphanumeric(12)))
+            User(username = faker.internet().username(), email = alreadyUsedEmail, password = BCrypt.hashpw(RandomStringUtils.randomAlphanumeric(12)))
         user = userService.create(user)
         assertNotNull(user.getId())
         mockMvc
@@ -100,7 +100,7 @@ internal class UserControllerTest {
 
     @Test
     fun signupShouldFailIfNoToken() {
-        val username: String = faker.name().username()
+        val username: String = faker.internet().username()
         val email = getEmail(username)
         val userNewRequest = UserNewRequest(email = email, password = RandomStringUtils.randomAlphanumeric(12), username = username, token = "")
         assertEquals(userNewRequest.token, "")
@@ -114,7 +114,7 @@ internal class UserControllerTest {
 
     @Test
     fun signupShouldReturnSuccess() {
-        val username: String = faker.name().username()
+        val username: String = faker.internet().username()
         val email = getEmail(username)
         val vault: Vault = vaultService.createVerificationCode(email)
         assertNotNull(vault.getId())
@@ -137,7 +137,7 @@ internal class UserControllerTest {
     @Test
     fun loginAndRefreshTokenShouldSuccess() {
         val uc = UserCredential(
-            username = faker.name().username(),
+            username = faker.internet().username(),
             email = faker.internet().emailAddress(),
             password = RandomStringUtils.randomAlphanumeric(12)
         )
@@ -181,7 +181,7 @@ internal class UserControllerTest {
     @Test
     fun loginAndRefreshTokenReUsageShouldSuccess() {
         val uc = UserCredential(
-            username = faker.name().username(),
+            username = faker.internet().username(),
             email = faker.internet().emailAddress(),
             password = RandomStringUtils.randomAlphanumeric(12)
         )
@@ -240,7 +240,7 @@ internal class UserControllerTest {
     @Test
     fun loginShouldFail() {
         val uc = UserCredential(
-            username = faker.name().username(),
+            username = faker.internet().username(),
             email = faker.internet().emailAddress(),
             password = RandomStringUtils.randomAlphanumeric(12)
         )
@@ -261,7 +261,7 @@ internal class UserControllerTest {
     fun passwordResetTest() {
         // Create a new User
         val uc = UserCredential(
-            username = faker.name().username(),
+            username = faker.internet().username(),
             email = faker.internet().emailAddress(),
             password = RandomStringUtils.randomAlphanumeric(12)
         )
@@ -322,7 +322,7 @@ internal class UserControllerTest {
         val newPassword = RandomStringUtils.randomAlphanumeric(12)
 
         // Create a new User
-        val username: String = faker.name().username()
+        val username: String = faker.internet().username()
         val email = getEmail(username)
         val vault: Vault = vaultService.createVerificationCode(email)
         assertNotNull(vault.getId())
@@ -383,7 +383,7 @@ internal class UserControllerTest {
     @Test
     fun accountDeletionTest() {
         // Create a new User
-        val username: String = faker.name().username()
+        val username: String = faker.internet().username()
         val email = getEmail(username)
         val vault: Vault = vaultService.createVerificationCode(email)
         assertNotNull(vault.getId())

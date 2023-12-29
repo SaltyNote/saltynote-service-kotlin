@@ -92,13 +92,7 @@ class NoteController(val noteService: NoteService) {
         noteDto.userId = userId
         var note = Note.from(noteDto)
         note = noteService.create(note)
-        if (note.getId() != null) {
-            return ResponseEntity.ok(note)
-        }
-        throw WebAppRuntimeException(
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            "Failed to save note into database: $note"
-        )
+        return ResponseEntity.ok(note)
     }
 
     private fun checkNoteOwner(note: Optional<Note>) {

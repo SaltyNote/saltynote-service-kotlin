@@ -2,7 +2,6 @@ package com.saltynote.service.controller
 
 import cn.dev33.satoken.secure.BCrypt
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.javafaker.Faker
 import com.saltynote.service.domain.VaultType
 import com.saltynote.service.domain.transfer.*
 import com.saltynote.service.entity.Note
@@ -10,6 +9,7 @@ import com.saltynote.service.entity.User
 import com.saltynote.service.entity.Vault
 import com.saltynote.service.security.SecurityConstants
 import com.saltynote.service.service.*
+import net.datafaker.Faker
 import org.apache.commons.lang3.RandomStringUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers
@@ -73,7 +73,7 @@ internal class UserControllerTest {
 
     @Test
     fun emailVerifyTest() {
-        val username: String = faker.name().username()
+        val username: String = faker.internet().username()
         val emailStr = getEmail(username)
         val alreadyUsedEmail = "example@exmaple.com"
         var user =

@@ -1,7 +1,6 @@
 package com.saltynote.service.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.javafaker.Faker
 import com.saltynote.service.domain.transfer.NoteDto
 import com.saltynote.service.domain.transfer.TokenPair
 import com.saltynote.service.domain.transfer.UserCredential
@@ -14,6 +13,7 @@ import com.saltynote.service.service.EmailService
 import com.saltynote.service.service.NoteService
 import com.saltynote.service.service.UserService
 import com.saltynote.service.service.VaultService
+import net.datafaker.Faker
 import org.apache.commons.lang3.RandomStringUtils
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.commons.lang3.tuple.Pair

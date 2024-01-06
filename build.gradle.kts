@@ -30,7 +30,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.freemarker:freemarker")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("io.github.oshai:kotlin-logging-jvm:5.1.1")
+    implementation("io.github.oshai:kotlin-logging-jvm:6.0.1")
     implementation("org.apache.commons:commons-lang3:3.14.0")
     implementation("com.google.guava:guava:33.0.0-jre")
     implementation("org.mapstruct:mapstruct:1.5.5.Final")

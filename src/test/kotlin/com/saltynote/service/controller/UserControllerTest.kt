@@ -371,7 +371,7 @@ internal class UserControllerTest {
             .andExpect(status().isForbidden())
 
         // login with new password should success
-        val ur: UserCredential = UserCredential(username = userNewRequest.username, password = newPassword, email = userNewRequest.email)
+        val ur = UserCredential(username = userNewRequest.username, password = newPassword, email = userNewRequest.email)
         mockMvc
             .perform(
                 post("/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(ur))

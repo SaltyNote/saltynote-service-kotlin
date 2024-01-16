@@ -93,10 +93,3 @@ class SnowflakeIdGenerator(dcId: Long, mId: Long) : IdGenerator {
     }
 
 }
-
-fun main() {
-    val idGenerator = SnowflakeIdGenerator(1, 1)
-    for (i in 0..50) {
-        println(idGenerator.nextId())
-    }
-}

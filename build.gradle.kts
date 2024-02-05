@@ -7,7 +7,7 @@ plugins {
     id("org.graalvm.buildtools.native") version "0.9.28"
     kotlin("jvm") version "1.9.21"
     kotlin("plugin.spring") version "1.9.21"
-    id("io.gitlab.arturbosch.detekt") version "1.23.4"
+    id("io.gitlab.arturbosch.detekt") version "1.23.5"
 }
 
 group = "com.saltynote.service"

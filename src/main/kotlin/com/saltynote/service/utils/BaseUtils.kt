@@ -1,37 +1,30 @@
 package com.saltynote.service.utils
 
-import com.saltynote.service.exception.IllegalInitialException
 import org.apache.commons.lang3.StringUtils
 
-class BaseUtils private constructor() {
-    init {
-        throw IllegalInitialException("Do not instantiate me.")
+object BaseUtils {
+    private var baseUrl = "https://saltynote.com"
+
+    // This is used for test or dev usage, do not call it in prod.
+    fun setBaseUrl(baseUrl: String) {
+        if (StringUtils.startsWithIgnoreCase(baseUrl, "http")) {
+            BaseUtils.baseUrl = baseUrl
+        }
     }
 
-    companion object {
-        private var baseUrl = "https://saltynote.com"
+    fun getPasswordResetUrl(secret: String): String {
+        return "$baseUrl/password/reset?token=$secret"
+    }
 
-        // This is used for test or dev usage, do not call it in prod.
-        fun setBaseUrl(baseUrl: String) {
-            if (StringUtils.startsWithIgnoreCase(baseUrl, "http")) {
-                Companion.baseUrl = baseUrl
-            }
+    fun containsAllIgnoreCase(src: String, queries: Iterable<String>): Boolean {
+        if (StringUtils.isBlank(src)) {
+            return false
         }
-
-        fun getPasswordResetUrl(secret: String): String {
-            return "$baseUrl/password/reset?token=$secret"
-        }
-
-        fun containsAllIgnoreCase(src: String, queries: Iterable<String>): Boolean {
-            if (StringUtils.isBlank(src)) {
+        for (q in queries) {
+            if (StringUtils.isNotBlank(q) && !StringUtils.containsIgnoreCase(src, q.trim { it <= ' ' })) {
                 return false
             }
-            for (q in queries) {
-                if (StringUtils.isNotBlank(q) && !StringUtils.containsIgnoreCase(src, q.trim { it <= ' ' })) {
-                    return false
-                }
-            }
-            return true
         }
+        return true
     }
 }

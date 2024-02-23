@@ -22,11 +22,8 @@ class ServiceApplication {
                 .build()
         )
     }
+}
 
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            SpringApplication.run(ServiceApplication::class.java, *args)
-        }
-    }
+fun main(args: Array<String>) {
+    SpringApplication.run(ServiceApplication::class.java, *args)
 }

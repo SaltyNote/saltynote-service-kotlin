@@ -1,7 +1,5 @@
 package com.saltynote.service.controller
 
-import cn.dev33.satoken.secure.BCrypt
-import cn.dev33.satoken.stp.StpUtil
 import com.saltynote.service.domain.VaultType
 import com.saltynote.service.domain.transfer.*
 import com.saltynote.service.entity.User
@@ -11,6 +9,7 @@ import com.saltynote.service.security.SecurityConstants
 import com.saltynote.service.service.JwtService
 import com.saltynote.service.service.UserService
 import com.saltynote.service.service.VaultService
+import com.saltynote.service.utils.IdUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -113,7 +112,7 @@ class UserController(
     @Transactional
     @DeleteMapping("/refresh_tokens")
     fun cleanRefreshTokens(): ResponseEntity<ServiceResponse> {
-        val userId = StpUtil.getLoginIdAsLong()
+        val userId = IdUtils.getUserId()
         logger.info { "[cleanRefreshTokens] user = $userId" }
         vaultService.cleanRefreshTokenByUserId(userId)
         return ResponseEntity.ok(ServiceResponse.ok("All your refresh tokens are cleaned."))

@@ -2,6 +2,7 @@ package com.saltynote.service.controller
 
 import cn.dev33.satoken.secure.BCrypt
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ninjasquad.springmockk.MockkBean
 import com.saltynote.service.domain.VaultType
 import com.saltynote.service.domain.transfer.*
 import com.saltynote.service.entity.Note
@@ -9,6 +10,7 @@ import com.saltynote.service.entity.User
 import com.saltynote.service.entity.Vault
 import com.saltynote.service.security.SecurityConstants
 import com.saltynote.service.service.*
+import io.mockk.every
 import net.datafaker.Faker
 import org.apache.commons.lang3.RandomStringUtils
 import org.assertj.core.api.Assertions.assertThat
@@ -16,15 +18,12 @@ import org.hamcrest.Matchers
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.doNothing
-import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
@@ -60,15 +59,15 @@ internal class UserControllerTest {
     @Autowired
     lateinit var jwtService: JwtService
 
-    @MockBean
-    private var emailService: EmailService? = null
+    @MockkBean
+    private lateinit var emailService: EmailService
 
     private val faker = Faker()
 
     @BeforeEach
     fun setup() {
-        doNothing().`when`<EmailService>(emailService).sendAsHtml(any(), any(), any())
-        doNothing().`when`<EmailService>(emailService).send(any(), any(), any())
+        every { emailService.sendAsHtml(any(), any(), any()) } returns Unit
+        every { emailService.send(any(), any(), any()) } returns Unit
     }
 
     @Test
@@ -127,7 +126,6 @@ internal class UserControllerTest {
                 post("/signup").contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(userNewRequest))
             )
-//            .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk())
         val queryUser = userService.getByUsername(userNewRequest.username)
         assertThat(queryUser!!.email).isEqualTo(userNewRequest.email)

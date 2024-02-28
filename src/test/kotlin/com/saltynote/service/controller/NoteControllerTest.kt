@@ -1,6 +1,7 @@
 package com.saltynote.service.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ninjasquad.springmockk.MockkBean
 import com.saltynote.service.domain.transfer.NoteDto
 import com.saltynote.service.domain.transfer.TokenPair
 import com.saltynote.service.domain.transfer.UserCredential
@@ -13,6 +14,7 @@ import com.saltynote.service.service.EmailService
 import com.saltynote.service.service.NoteService
 import com.saltynote.service.service.UserService
 import com.saltynote.service.service.VaultService
+import io.mockk.every
 import net.datafaker.Faker
 import org.apache.commons.lang3.RandomStringUtils
 import org.apache.commons.lang3.SerializationUtils
@@ -24,15 +26,12 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
@@ -61,8 +60,8 @@ class NoteControllerTest {
     @Autowired
     lateinit var vaultService: VaultService
 
-    @MockBean
-    private var emailService: EmailService? = null
+    @MockkBean
+    private lateinit var emailService: EmailService
 
     private var notesToCleaned = mutableListOf<Note>()
     private var siteUser = User()
@@ -71,8 +70,9 @@ class NoteControllerTest {
 
 
     private fun signupTestUser(): Pair<User, String> {
-        Mockito.doNothing().`when`<EmailService>(emailService).sendAsHtml(any(), any(), any())
-        Mockito.doNothing().`when`<EmailService>(emailService).send(any(), any(), any())
+        every { emailService.sendAsHtml(any(), any(), any()) } returns Unit
+        every { emailService.send(any(), any(), any()) } returns Unit
+
         val username: String = faker.internet().username()
         val email = "$username@saltynote.com"
         val vault: Vault = vaultService.createVerificationCode(email)

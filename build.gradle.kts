@@ -36,7 +36,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.14.0")
     implementation("com.google.guava:guava:33.2.1-jre")
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
     implementation("cn.dev33:sa-token-spring-boot3-starter:1.37.0")
     implementation("cn.dev33:sa-token-jwt:1.37.0")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

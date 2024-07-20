@@ -1,5 +1,7 @@
 # saltynote-service-kotlin
 
+> Check [zhouhao/cloudflare-worker-saltynote](https://github.com/zhouhao/cloudflare-worker-saltynote) for further updates. Hope for budget saving.
+
 [![Gradle Test](https://github.com/SaltyNote/saltynote-service-kotlin/actions/workflows/gradle.yml/badge.svg)](https://github.com/SaltyNote/saltynote-service-kotlin/actions/workflows/gradle.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/c8d2d08e89f54d85a852586dd927dc1a)](https://app.codacy.com/gh/SaltyNote/saltynote-service-kotlin/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 ![Website](https://img.shields.io/website?label=service&url=https%3A%2F%2Fapi.saltynote.com)
